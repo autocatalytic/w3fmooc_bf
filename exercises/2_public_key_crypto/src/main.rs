@@ -359,16 +359,19 @@ fn generate_two_primes(mut rng: &mut rand::prelude::ThreadRng) -> (u32, u32) {
 
         // Step 1: Generate two random primes for p and q
         //         Hint: the get_random_prime() function might be useful
-        
+        let mut seed = thread_rng();
+        p = get_random_prime(&mut seed);
+        q = get_random_prime(&mut seed);
+
         // Step 2: Break out of the loop if p and q are distinct (i.e.
         //         not the same)
-        if true {
+        if !(p == q) {
             break;
         }
     }
 
     // Step 3: Return p and q as a tuple
-    (0, 0)
+    (p, q)
 }
 
 
@@ -385,11 +388,11 @@ fn choose_private_exponent(c: u32, rng: &mut rand::prelude::ThreadRng) -> u32 {
     
     loop {
         // Step 1: Generate a random integer betwen 2 and c
-
-        
+        p = rng.gen_range(2, c);
+            
         // Step 2: If the generated integer and c are coprime, break
         //         out of the loop
-        if true {
+        if is_coprime(p, c) {
             break;
         }
     }
@@ -408,7 +411,7 @@ fn compute_public_exponent(e: u32, n: u32) -> u32 {
     // Step 1: Generate and return the multiplicative inverse of e modulo n.
     //         Hint: the mmi() function might be useful here.
     
-    0
+    mmi(e, n)
 }
 
 
