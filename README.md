@@ -1,4 +1,5 @@
-# Exercises and Solutions for Blockchain Fundamentals MOOC
+# Working Repository Clone
+## Blockchain Fundamentals MOOC
 
 ## Introduction
 
