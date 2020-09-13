@@ -345,7 +345,7 @@ fn print_keys(n: u32, d: u32, e: u32) {
 
 // Given a random number generator, produce two distinct pseudorandom primes.
 
-fn generate_two_primes(mut rng: &mut rand::prelude::ThreadRng) -> (u32, u32) {
+fn generate_two_primes(rng: &mut rand::prelude::ThreadRng) -> (u32, u32) {
 
     // TODO 1
     
@@ -420,28 +420,34 @@ fn compute_public_exponent(e: u32, n: u32) -> u32 {
 // Since the modulus is shared between public and private keys, there is no
 // no need to send it back twice.
 
-fn generate_key_pair(mut rng: &mut rand::prelude::ThreadRng) -> (u32, u32, u32) {
+fn generate_key_pair(rng: &mut rand::prelude::ThreadRng) -> (u32, u32, u32) {
 
     // TODO 4
     
     // Step 1: Choose two distinct prime numbers, p and q.
     //         I recommend you work on TODO 1 before this.
+    let mut seed = thread_rng();
+    let (p, q) = generate_two_primes(&mut seed);
 
 
     // Step 2: Compute m = p * q (will be the modulus)
+    let m = p * q;
 
 
     // Step 3: Compute n = Carmichael's totient function of p, q
     //         Carmichael's Totient is simply lcm(p - 1, q - 1) - I have
     //         included a helper function, carmichael_totient(), for you.
+    let n = carmichael_totient(p, q);
 
     
     // Step 4: Choose some e which is coprime to n and 1 < e < n
     //         I recommend you work on TODO 2 before this.
+    let e = choose_private_exponent(n, &mut seed);
 
     
     // Step 5: Compute the modular multiplicative inverse for d
     //           I recommend you work on TODO 3 before this.
+    let d = compute_public_exponent(e, n);
 
 
     // DEBUG: Perform a sanity check before returning.
@@ -449,13 +455,14 @@ fn generate_key_pair(mut rng: &mut rand::prelude::ThreadRng) -> (u32, u32, u32) 
     //         If it does not, panic!
     // If your code works, this is superfluous, but may be useful for
     // testing.  Uncomment the next line to turn this check on.
-    // check_vals(d, e, n);
+    check_vals(d, e, n);
     
     // Return a three-tuple with the following elements:
     // 1. Modulus (m)
     // 2. Private Exponent (e)
     // 3. Public Exponent (d)
-    (0, 0, 0)
+    //(0, 0, 0)
+    (m, e, d)
 }
 
 
@@ -467,14 +474,16 @@ fn sign_message(msg: String, priv_key_mod: u32, priv_key_exp: u32) -> u32 {
     
     // Step 1: Produce a hash value of the message.  Note that I have
     // included a get_hash() function for you to use.  
+    let msg_hv = get_hash(&msg);
     
     // Step 2: Raise the hash to the power of the private key exponent, modulo the
     // private key modulus (which is, of course, same as the public key modulus).
     // Note that I have included a raise_power_modulo() function.
+    let msg_hv_raised = raise_power_modulo(msg_hv, priv_key_exp, priv_key_mod);
 
     // Step 3: Return the result of the previous operation
     
-    0
+    msg_hv_raised
     
 }
 
@@ -489,15 +498,19 @@ fn verify_signature(msg: String, sig: u32, pub_key_mod: u32, pub_key_exp: u32) -
     
     // Step 1: Get the hash value of the message.
     //         Remember there is a get_hash() function for you to use.
+    let msg_hv = get_hash(&msg);
+
         
     // Step 2: Raise the signature to the power of pub_key_exp modulo
     //         pub_key_mod.  Remember there is a raise_power_modulo() function
     //         for you to use.
+    let sig_raised = raise_power_modulo(sig, pub_key_exp, pub_key_mod);
 
     // Step 3: Return true if the result of the previous operation is equal to
     // the hash value modulo the public key modulus, false otherwise.
+    let msg_hv_mod_pk = msg_hv % pub_key_mod;
     
-    false
+    if sig_raised == msg_hv_mod_pk { true } else { false }
 }
 
 fn main() {
