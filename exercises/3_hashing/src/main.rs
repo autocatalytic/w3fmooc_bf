@@ -293,21 +293,23 @@ fn bill_hash(to_hash: String) -> u64 {
     let input_vec = convert_string_to_u8s(to_hash);
 
     // Strengthen and split the blocks into BLOCK_SIZE-size blocks
-    let input_vec_split = split(strengthen(input_vec));
+    let input_vec_padded = strengthen(input_vec);
+    let input_vec_split = split(input_vec_padded);
 
     // Set the initialization vector as the initial compress value
-    let cv = INITIALIZATION_VECTOR;
-    let return_hash = 0u64;
+    let mut cv: u64 = INITIALIZATION_VECTOR;
+    // don't need this. If recompress each time, Rust does return
+    // let return_hash = 0u64;
 
     // Loop through the blocks, taking the cv from the previous block
     // as input to the current block
     for block in input_vec_split.iter() {
-        let _return_hash = compress(cv, block.to_vec());
-        let _cv = block;
+        cv = compress(cv, block.to_vec());
+        // println!("hash {:?}, and cv: {:?}", block, cv);
     }
 
     // Finalize and return that value as the hash
-    finalize(return_hash)
+    finalize(cv)
 
 }
 
