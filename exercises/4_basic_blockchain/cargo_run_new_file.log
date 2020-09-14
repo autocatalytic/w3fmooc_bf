@@ -1,0 +1,11 @@
+$ cargo run new_file.csv 
+    Finished dev [unoptimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/basic_blockchain_solution new_file.csv`
+Block: 0, 0x00000000000000 sent 100 billcoins to 0x000b17027d467e (Prev Hash: 0x00000000000000)
+Block: 1, 0x000b17027d467e sent 50 billcoins to 0x000099b3ee996f (Prev Hash: 0xd7ccbd5ece70135c)
+Block: 2, 0x000099b3ee996f sent 25 billcoins to 0x000000eccc8796 (Prev Hash: 0xbd228a28065fce07)
+Block: 3, 0x000000eccc8796 sent 12 billcoins to 0x000099b3ee996f (Prev Hash: 0x9870043b95445a2b)
+0x000b17027d467e : 50 billcoins
+0x000099b3ee996f : 37 billcoins
+0x000000eccc8796 : 13 billcoins
+Blockchain valid!
