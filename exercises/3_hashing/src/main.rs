@@ -133,7 +133,7 @@ fn strengthen(mut data: Vec<u8>) -> Vec<u8> {
     // Otherwise, add just enough 0's to the end so that the total length is
     // evenly divisible by BLOCK_SIZE.
     } else {
-        for i in 0..(BLOCK_SIZE - missing_zeros) {
+        for _i in 0..(BLOCK_SIZE - missing_zeros) {
             data.push(0);
         }
         return data
@@ -219,11 +219,16 @@ fn compress(cv: u64, data: Vec<u8>) -> u64 {
 
     // TODO 4
     // Convert the vector to an array of u8s of size 8
-    let mut data_array = [0u8; 8];
-    for i in 0..8 {
-        data_array[i] = data[i];
+    let mut data_copy = data;
+    let mut data_array: [u8; BLOCK_SIZE] = [0; BLOCK_SIZE];
+    for i in 0..BLOCK_SIZE {
+        // This didn't work for test_compress_iv_incr, so
+        // had to use Laboon solution, including data_copy
+        // 
+        // data_array[i] = data[i];
+        data_array[i] = data_copy.pop().unwrap();
     }
-    
+
     // Call transform with cv and data as arguments
     transform(cv, data_array)
 }
@@ -247,7 +252,7 @@ fn split(data: Vec<u8>) -> Vec<Vec<u8>> {
     let mut return_vec: Vec<Vec<u8>> = vec![];
 
     for chunk in data_padded.chunks(BLOCK_SIZE) {
-        let return_vec = return_vec.push(chunk.to_vec());
+        let _return_vec = return_vec.push(chunk.to_vec());
     }
 
     return_vec
@@ -285,18 +290,25 @@ fn bill_hash(to_hash: String) -> u64 {
     // TODO 6
 
     // Convert the blocks into a vector of u8s
+    let input_vec = convert_string_to_u8s(to_hash);
 
     // Strengthen and split the blocks into BLOCK_SIZE-size blocks
+    let input_vec_split = split(strengthen(input_vec));
 
     // Set the initialization vector as the initial compress value
+    let cv = INITIALIZATION_VECTOR;
+    let return_hash = 0u64;
 
     // Loop through the blocks, taking the cv from the previous block
     // as input to the current block
+    for block in input_vec_split.iter() {
+        let _return_hash = compress(cv, block.to_vec());
+        let _cv = block;
+    }
 
     // Finalize and return that value as the hash
+    finalize(return_hash)
 
-    // Note that this is just an arbitrary return value to allow for compilation 
-    12
 }
 
 /// Main function.
@@ -492,6 +504,7 @@ mod tests {
     fn test_compress_0_ffs() {
         let cv = 0;
         let to_test = vec![0xFF; 8];
+        println!("data_array: {:?}", to_test);
         assert_eq!(compress(cv, to_test), 0xF7367D233B6FE510);
     }
 
