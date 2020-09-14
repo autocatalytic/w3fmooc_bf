@@ -119,17 +119,25 @@ fn get_to_hash() -> String {
 /// add 0s until data % BLOCK_SIZE == 0 and data.len() > 0.
 /// Note that there is an edge where an empty vector is passed in.  In this case,
 /// we will have to add BLOCK_SIZE number of 0's.
-fn strengthen(data: Vec<u8>) -> Vec<u8> {
+fn strengthen(mut data: Vec<u8>) -> Vec<u8> {
 
     // TODO 1
     
     // If the number of characters passed in was evenly divisible by BLOCK_SIZE
     // and was not 0, just return the data that was passed in.
+    let missing_zeros = data.len() % BLOCK_SIZE;
 
+    if missing_zeros == 0 && data.len() > 0 { 
+        return data;
+    
     // Otherwise, add just enough 0's to the end so that the total length is
     // evenly divisible by BLOCK_SIZE.
-    vec![12]
-
+    } else {
+        for i in 0..(BLOCK_SIZE - missing_zeros) {
+            data.push(0);
+        }
+        return data
+    }
 }
 
 /// The twiddle method "twiddles" the bits of the input array `arr` by XORing the
@@ -183,15 +191,22 @@ fn twiddle(arr: &mut [u8; BLOCK_SIZE]) {
 fn transform(cv: u64, arr: [u8; BLOCK_SIZE]) -> u64 {
 
     // TODO 3
+    let cv_arr: [u8; BLOCK_SIZE] = cv.to_le_bytes();
+    let mut to_return: [u8; BLOCK_SIZE] = [0; BLOCK_SIZE];
 
     // XOR the bytes in initial array against the CV's bytes
+    for j in 0..BLOCK_SIZE {
+        to_return[j] = arr[j] ^ cv_arr[j];
+    }
 
     // For these new bytes, run the twiddle function on them 1,024 times
+    for _j in 0..1024 {
+        twiddle(&mut to_return);
+    }
 
     // Return the twiddled bytes as a single u64 value by interpreting the bytes
     // as a little-endian bytes
-    // Note that this is just an arbitrary return value to allow for compilation 
-    12
+    u64::from_le_bytes(to_return)
 }
 
 /// The compress function accepts a previous compress value and the data to operate
@@ -203,13 +218,14 @@ fn transform(cv: u64, arr: [u8; BLOCK_SIZE]) -> u64 {
 fn compress(cv: u64, data: Vec<u8>) -> u64 {
 
     // TODO 4
-
     // Convert the vector to an array of u8s of size 8
-
-    // Call transform with cv and data as arguments
+    let mut data_array = [0u8; 8];
+    for i in 0..8 {
+        data_array[i] = data[i];
+    }
     
-    // Note that this is just an arbitrary return value to allow for compilation 
-    12
+    // Call transform with cv and data as arguments
+    transform(cv, data_array)
 }
 
 /// Given a vector of u8s, split it into a vector of vectors of u8s.
@@ -226,9 +242,15 @@ fn compress(cv: u64, data: Vec<u8>) -> u64 {
 
 fn split(data: Vec<u8>) -> Vec<Vec<u8>> {
     // TODO 2
-    
-    // Note that this is just an arbitrary return value to allow for compilation 
-    vec![vec![12]]
+    let data_padded = strengthen(data);
+    //let num_vecs = data_padded.len() / BLOCK_SIZE;
+    let mut return_vec: Vec<Vec<u8>> = vec![];
+
+    for chunk in data_padded.chunks(BLOCK_SIZE) {
+        let return_vec = return_vec.push(chunk.to_vec());
+    }
+
+    return_vec
 }
 
 /// The finalize function will return the bitwise complement of the passed-in value.
@@ -242,9 +264,8 @@ fn split(data: Vec<u8>) -> Vec<Vec<u8>> {
 
 fn finalize(to_finalize: u64) -> u64 {
     // TODO 5
-    
-    // Note that this is just an arbitrary return value to allow for compilation 
-    12
+    let complement = !to_finalize;
+    complement
 }
 
 /// Run the BillHash function on the input string and return the hash value.
